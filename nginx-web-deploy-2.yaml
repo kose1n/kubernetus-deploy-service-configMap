@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-cm-2
+data:
+  index.html: |
+      <!DOCTYPE html>
+      <html>
+      <head>
+      <title>Welcome to cat 1</title>
+      <style>
+      html { color-scheme: light dark; }
+      body { width: 35em; margin: 0 auto;
+      font-family: Tahoma, Verdana, Arial, sans-serif; }
+      </style>
+      </head>
+      <body>
+      <h1>Welcome to HOME CAT 1/h1>
+      <Img src="https://www.ntv.ru/home/news/2021/20210715/8-kot_io.jpg">
+      <p>If you see this page, the nginx web server is successfully installed and
+      working. Further configuration is required.</p>
+
+      <p>For online documentation and support please refer to
+      <a href="http://nginx.org/">nginx.org</a>.<br/>
+      Commercial support is available at
+      <a href="http://nginx.com/">nginx.com</a>.</p>
+
+      <p><em>Thank you for using nginx.</em></p>  
+      </body>
+      </html>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app-2
+spec:
+  selector:
+     matchLabels:
+       app: web-app-2
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: web-app-2
+    spec:
+      containers:
+        - image: nginx:latest
+          name: web-app-2
+          ports:
+            - containerPort: 80
+          volumeMounts: 
+            - name: web-volume-2
+              mountPath: /usr/share/nginx/html/index.html
+              subPath: index.html
+              readOnly: true
+      volumes:
+        - name: web-volume-2
+          configMap:
+            name: web-cm-2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service-2
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: web-app-2
